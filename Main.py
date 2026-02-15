@@ -1,5 +1,5 @@
 from turtle import Turtle, Screen
-from kmean import kMean, randomCoords
+from Kmeans import kMean, randomCoords
 import random
 
 colors = ["blue", "red", "orange", "steel blue", "purple", "black", "hot pink", "saddle brown", "silver", "dark slate gray"]
