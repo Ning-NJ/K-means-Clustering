@@ -1,6 +1,8 @@
 import random
 import math
 
+# make code more efficient and add an algorithm that chooses k
+
 class Point:
     def __init__(self, x, y):
         self.x = x
@@ -18,6 +20,9 @@ class Point:
             return True
         return False
 
+def dist(p1, p2):
+    return math.sqrt(math.pow(p1.getX() - p2.getX(), 2) + math.pow(p1.getY() - p2.getY(), 2))
+
 def randomCoords(amount, minX, maxX, minY, maxY):
     coords = []
     for i in range(int(amount)):
@@ -25,66 +30,62 @@ def randomCoords(amount, minX, maxX, minY, maxY):
     return coords
 
 def placeCentroid(cenAmount, minX, maxX, minY, maxY):
-    cenCoords = []
+    centroids = []
     for i in range(int(cenAmount)):
-        cenCoords.append(Point(random.randint(minX, maxX), random.randint(minY, maxY)))
-    return cenCoords
+        centroids.append(Point(random.randint(minX, maxX), random.randint(minY, maxY)))
+    return centroids
 
-def centroidDistance(coords, cenCoords):
-    cenDistance = []
-    for coord in coords:
-        dataForCoord = []
-        dataForCoord.append(coord)
-        for i in range(len(cenCoords)):
-            dataForCoord.append(math.sqrt(math.pow(coord.getX() - cenCoords[i].getX(), 2)+math.pow(coord.getY() - cenCoords[i].getY(), 2)))
-        cenDistance.append(dataForCoord)
-    return cenDistance
+def assignToCluster(coords, centroids):
+    clusters = [[] for _ in range(len(centroids))] # creates a cluster for each centroid
 
-def assignToCentroid(cenDistance, cenAmount):
-    closestCentroid = []
-    for amount in range (int(cenAmount)):
-        blankList = []
-        closestCentroid.append(blankList)
-    for i in range(len(cenDistance)):
-        smallest = cenDistance[i][1]
-        index = 0
-        for j in range(2, len(cenDistance[i])):
-            if cenDistance[i][j] < smallest:
-                smallest = cenDistance[i][j]
-                index = j-1
-        closestCentroid[index].append(cenDistance[i][0])
-    return closestCentroid
+    for i in range(len(coords)):
+        point = coords[i]
+        # compute distance from each centroid then assign into clusters A, B, ... K
+        # store points in cluster A as coords[0], coords[1]...
+        bestCluster = 0
+        bestDist = dist(point, centroids[0])
 
-def meanFinder(closestCentroid, cenAmount, coords):
-    meanedCen = []
-    for i in range (int(cenAmount)):
-        if len(closestCentroid[i]) == 0:
-            meanedCen.append(random.choice(coords))
+        for j in range(1, len(centroids)):
+            distance = dist(point, centroids[j])
+            if distance < bestDist:
+                bestDist = distance
+                bestCluster = j
+
+        clusters[bestCluster].append(i)
+
+    return clusters
+
+def findNewCentroid(clusters, coords):
+    centroids = []
+    for cluster in clusters:
+        if len(cluster) == 0:
+            centroids.append(random.choice(coords))
             continue
-        xsum = 0.0
-        ysum = 0.0
-        for point in closestCentroid[i]:
-            xsum += point.getX()
-            ysum += point.getY()
-        point = Point(xsum/(len(closestCentroid[i])), ysum/(len(closestCentroid[i])))
-        meanedCen.append(point)
-    return meanedCen
+        xSum = 0
+        ySum = 0
+        for index in cluster:
+            xSum += coords[index].getX()
+            ySum += coords[index].getY()
 
-def kMean(coords, minX, maxX, minY, maxY, cenAmount):
-    cenCoords = placeCentroid(cenAmount, minX, maxX, minY, maxY)
-    cenDistance = centroidDistance(coords, cenCoords)
-    closestCen = assignToCentroid(cenDistance, cenAmount)
-    newCentroids = meanFinder(closestCen, cenAmount, coords)
-    while True:
-        for i in range(int(cenAmount)):
-            if newCentroids[i].isEqual(cenCoords[i]):
-                if i == cenAmount - 1:
-                    resultWithCen = [closestCen, newCentroids]
-                    return resultWithCen
-                continue
-            else:
-                break
-        cenCoords = newCentroids
-        cenDistance = centroidDistance(coords, cenCoords)
-        closestCen = assignToCentroid(cenDistance, cenAmount)
-        newCentroids = meanFinder(closestCen, cenAmount, coords)
+        centroids.append(Point(xSum/len(cluster), ySum/len(cluster)))
+        
+    return centroids
+
+def kMean(coords, minX, maxX, minY, maxY, cenAmount, tol = 0.0001, maxIter = 100):
+    #coords are coordinates, cenAmount is k, tol is centroid shift tolerance, maxIter is maximum iterations
+    centroids = placeCentroid(cenAmount, minX, maxX, minY, maxY)
+    
+    for i in range(maxIter):
+        clusters = assignToCluster(coords, centroids)
+        newCen = findNewCentroid(clusters, coords)
+
+        for i in range(cenAmount):
+            shift += dist(centroids[i], newCen[i])
+
+        centroids = newCen
+        if shift < tol:
+            break
+    
+    return clusters, centroids
+
+def silhouetteScoring(clusters):
