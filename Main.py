@@ -36,11 +36,15 @@ def drawGroupClicked(x, y):
     GlobalCen = result[1]
     draw.clear()
     usedColors = []
-    for coords in groups:
+    for cluster in groups:
         color = chooseColor(colors, usedColors)
         usedColors.append(color)
-        for coord in coords:
-            draw.goto(coord.getX(), coord.getY())
+
+        for coordIndex in cluster:
+            draw.goto(
+                GlobalCoords[coordIndex].getX(),
+                GlobalCoords[coordIndex].getY()
+            )
             draw.dot(5, color)
 
     scr.update()
@@ -64,10 +68,10 @@ def drawCoordClicked(x, y):
     global GlobalCoords, GlobalCen
     GlobalCoords.clear()
     GlobalCen.clear()
-    cordNum = scr.numinput("Coordinate Number","How many coordinates do you want?", minval=1, maxval=1000)
+    cordNum = scr.numinput("Coordinate Number","How many coordinates do you want?", minval=100, maxval=3000)
     if cordNum == None:
         return 0
-    GlobalCoords = randomCoords(cordNum, -195, 495, -345, 345)
+    GlobalCoords = randomCoords(cordNum, -195, 495, -345, 345, random.randint(2, 10), random.randint(25, 50))
     for coord in GlobalCoords:
         draw.goto(coord.getX(), coord.getY())
         draw.dot(5)
@@ -104,7 +108,7 @@ def showMessage(message, x, y, size, erase, turtle):
 
 def clearMessage():
     tTempWrite.clear()
-    scr.update
+    scr.update()
 
 def drawUI():
     t.goto(-500, 350)

@@ -23,10 +23,23 @@ class Point:
 def dist(p1, p2):
     return math.sqrt(math.pow(p1.getX() - p2.getX(), 2) + math.pow(p1.getY() - p2.getY(), 2))
 
-def randomCoords(amount, minX, maxX, minY, maxY):
+def randomCoords(amount, minX, maxX, minY, maxY, clusterNum, spread):
+    # to improve the purpose of this program, we're gonna make it less random and more grouped to see it better
     coords = []
-    for i in range(int(amount)):
-        coords.append(Point(random.randint(minX, maxX), random.randint(minY, maxY)))
+    centers = []
+
+    for i in range(clusterNum):
+        centers.append((random.randint(minX + spread * 2, maxX - spread * 2), random.randint(minY + spread * 2, maxY - spread * 2)))
+
+    for centerX, centerY in centers:
+        for i in range((int)(amount/clusterNum)):
+            while True:
+                x = random.gauss(centerX, spread)
+                y = random.gauss(centerY, spread)
+
+                if minX <= x <= maxX and minY <= y <= maxY:
+                    coords.append(Point(x, y))
+                    break
     return coords
 
 def placeCentroid(cenAmount, minX, maxX, minY, maxY):
@@ -41,7 +54,7 @@ def assignToCluster(coords, centroids):
     for i in range(len(coords)):
         point = coords[i]
         # compute distance from each centroid then assign into clusters A, B, ... K
-        # store points in cluster A as coords[0], coords[1]...
+        # store points as index of coords in cluster A as coords[0], coords[1]...
         bestCluster = 0
         bestDist = dist(point, centroids[0])
 
@@ -78,8 +91,8 @@ def kMean(coords, minX, maxX, minY, maxY, cenAmount, tol = 0.0001, maxIter = 100
     for i in range(maxIter):
         clusters = assignToCluster(coords, centroids)
         newCen = findNewCentroid(clusters, coords)
-
-        for i in range(cenAmount):
+        shift = 0
+        for i in range((int)(cenAmount)):
             shift += dist(centroids[i], newCen[i])
 
         centroids = newCen
@@ -88,4 +101,7 @@ def kMean(coords, minX, maxX, minY, maxY, cenAmount, tol = 0.0001, maxIter = 100
     
     return clusters, centroids
 
-def silhouetteScoring(clusters):
+#def silhouetteScoring(clusters, centroids):
+    #step 1: make a loop fo each point in each cluster
+    #step 2: find the distance from other points in the cluster 
+    #for i in range ():
