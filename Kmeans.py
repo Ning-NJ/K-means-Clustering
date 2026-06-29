@@ -101,7 +101,10 @@ def kMean(coords, minX, maxX, minY, maxY, cenAmount, tol = 0.0001, maxIter = 100
     
     return clusters, centroids
 
-#def silhouetteScoring(clusters, centroids):
+def silhouetteScoring(clusters, centroids, coords):
     #step 1: make a loop fo each point in each cluster
     #step 2: find the distance from other points in the cluster 
-    #for i in range ():
+    #use dictionary to make finding distance more efficient
+    #when you create key from a to b you also create one for b to a, assign same value. search for key first then create
+    for cluster in range (len(clusters)):
+        for
